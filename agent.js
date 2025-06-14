@@ -9,7 +9,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const API_BASE_URL = process.env.API_BASE_URL || 'https://attendance-server-7.onrender.com';
+const API_BASE_URL = process.env.BACKEND_URL || 'http://localhost:5000';
 
 app.post('/trigger-checkin', async (req, res) => {
   try {
