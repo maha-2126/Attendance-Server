@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 const Attendance = require("../models/Attendance");
 const Employee = require("../models/Employee");
 const OfficeConfig = require("../models/OfficeConfig");
+const LeaveRequest = require('../models/LeaveRequest');
+const PermissionRequest = require("../models/PermissionRequest");
+const MonthlySummary = require('../models/MonthlySummary');
 const { normalizeMac } = require('../utils/macUtils');
 
 const checkIn = async (req, res) => {
