@@ -5,12 +5,12 @@ const OfficeConfig = require("../models/OfficeConfig");
 const LeaveRequest = require('../models/LeaveRequest');
 const PermissionRequest = require("../models/PermissionRequest");
 const MonthlySummary = require('../models/MonthlySummary');
-
+const { normalizeMac } = require('../utils/macUtils');
 
 
 const checkIn = async (req, res) => {
   try {
-    const { wifiMac, deviceMac } = req.body;
+    const { wifiMac, deviceMac, ipAddress } = req.body;
 
     if (!wifiMac || !deviceMac) {
       return res.status(400).json({ message: "MAC addresses required" });
@@ -23,10 +23,9 @@ const checkIn = async (req, res) => {
       return res.status(404).json({ message: "Employee or Office config not found" });
     }
 
-    const normalizeMac = (mac) => mac?.toLowerCase().replace(/-/g, ':').trim();
     const officeMac = normalizeMac(office.macAddress);
-    const deviceMacClean = normalizeMac(deviceMac);
     const wifiMacClean = normalizeMac(wifiMac);
+    const deviceMacClean = normalizeMac(deviceMac);
     const mobileMac = normalizeMac(employee.mobileMacAddress);
     const laptopMac = normalizeMac(employee.laptopMacAddress);
 
@@ -37,6 +36,11 @@ const checkIn = async (req, res) => {
     const isFromValidDevice = deviceMacClean === mobileMac || deviceMacClean === laptopMac;
     if (!isFromValidDevice) {
       return res.status(403).json({ message: "Device not registered for you" });
+    }
+
+    // Optional IP logging
+    if (ipAddress) {
+      console.log("📡 IP Address:", ipAddress);
     }
 
     const today = new Date();
@@ -52,7 +56,7 @@ const checkIn = async (req, res) => {
     }
 
     const now = new Date();
-    await Attendance.create({
+    const attendance = await Attendance.create({
       employeeId: req.user.userId,
       date: today,
       checkInTime: now,
@@ -66,7 +70,9 @@ const checkIn = async (req, res) => {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
-      })
+      }),
+      checkInTime: now,
+      status: "Pending"
     });
 
   } catch (err) {
@@ -74,6 +80,7 @@ const checkIn = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 const checkOut = async (req, res) => {
   try {
@@ -123,12 +130,16 @@ const checkOut = async (req, res) => {
         minute: "2-digit",
         hour12: false,
       }),
+      checkOutTime: now,
+      status
     });
+
   } catch (error) {
     console.error("Check-out Error:", error);
     return res.status(500).json({ message: "Server error" });
   }
 };
+
 
 const getMyAttendance = async (req, res) => {
   try {
