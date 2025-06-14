@@ -1,4 +1,5 @@
-// agent.js (run using: node agent.js)
+require('dotenv').config(); // Optional if you're using .env
+
 const express = require('express');
 const cors = require('cors');
 const { getConnectedWifiMac, getLocalDeviceMac } = require('./utils/macUtils');
@@ -8,17 +9,23 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const API_BASE_URL = process.env.API_BASE_URL || 'https://attendance-server-7.onrender.com';
+
 app.post('/trigger-checkin', async (req, res) => {
   try {
     const wifiMac = getConnectedWifiMac();
     const deviceMac = getLocalDeviceMac();
     const token = req.body.token;
 
+    if (!token) {
+      return res.status(400).json({ message: '❌ Token missing' });
+    }
+
     console.log("👉 wifiMac:", wifiMac);
     console.log("👉 deviceMac:", deviceMac);
     console.log("👉 token:", token);
 
-    const response = await axios.post('http://localhost:5000/api/attendance/checkin', {
+    const response = await axios.post(`${API_BASE_URL}/api/attendance/checkin`, {
       wifiMac,
       deviceMac
     }, {
@@ -35,6 +42,4 @@ app.post('/trigger-checkin', async (req, res) => {
   }
 });
 
-
-
-app.listen(3001, () => console.log("MAC Agent running on port 3001"));
+app.listen(3001, () => console.log("✅ MAC Agent running on port 3001"));
