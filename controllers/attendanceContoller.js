@@ -2,11 +2,7 @@ const mongoose = require("mongoose");
 const Attendance = require("../models/Attendance");
 const Employee = require("../models/Employee");
 const OfficeConfig = require("../models/OfficeConfig");
-const LeaveRequest = require('../models/LeaveRequest');
-const PermissionRequest = require("../models/PermissionRequest");
-const MonthlySummary = require('../models/MonthlySummary');
 const { normalizeMac } = require('../utils/macUtils');
-
 
 const checkIn = async (req, res) => {
   try {
@@ -20,7 +16,7 @@ const checkIn = async (req, res) => {
     const office = await OfficeConfig.findOne();
 
     if (!employee || !office?.macAddress) {
-      return res.status(404).json({ message: "Employee or Office config not found" });
+      return res.status(404).json({ message: "Employee or office config not found" });
     }
 
     const officeMac = normalizeMac(office.macAddress);
@@ -35,10 +31,9 @@ const checkIn = async (req, res) => {
 
     const isFromValidDevice = deviceMacClean === mobileMac || deviceMacClean === laptopMac;
     if (!isFromValidDevice) {
-      return res.status(403).json({ message: "Device not registered for you" });
+      return res.status(403).json({ message: "Device not registered to this employee" });
     }
 
-    // Optional IP logging
     if (ipAddress) {
       console.log("📡 IP Address:", ipAddress);
     }
@@ -76,7 +71,7 @@ const checkIn = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("Check-in Error:", err);
+    console.error("❌ Check-in Error:", err);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -85,6 +80,7 @@ const checkIn = async (req, res) => {
 const checkOut = async (req, res) => {
   try {
     const employeeId = req.user.userId;
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -106,12 +102,15 @@ const checkOut = async (req, res) => {
 
     let status = "Absent";
 
+    // 🎯 Mark Present if checked in by 11:00 and worked at least 6 hrs
     if (
       (checkInHour === 10 || (checkInHour === 11 && checkInMin === 0)) &&
       totalHours >= 6
     ) {
       status = "Present";
-    } else if (
+    }
+    // ⏳ Half Day if checked in between 10–5 and worked 3+ hrs
+    else if (
       ((checkInHour >= 10 && checkInHour < 13) ||
         (checkInHour >= 13 && checkInHour <= 17)) &&
       totalHours >= 3
@@ -136,7 +135,7 @@ const checkOut = async (req, res) => {
 
   } catch (error) {
     console.error("Check-out Error:", error);
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -225,78 +224,6 @@ const getAllAttendance = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
-
-// const getMonthlySummary = async (req, res) => {
-//   const { employeeId, year, month } = req.params;
-
-//   if (!mongoose.Types.ObjectId.isValid(employeeId)) {
-//     return res.status(400).json({ message: "Invalid employeeId" });
-//   }
-
-//   const monthPadded = month.padStart(2, '0');
-//   const startDate = new Date(`${year}-${monthPadded}-01T00:00:00.000Z`);
-//   const endDate = new Date(year, month, 0);
-//   endDate.setHours(23, 59, 59, 999);
-
-//   try {
-//     const result = {
-//       Present: 0,
-//       Absent: 0,
-//       'Half Day': 0,
-//       Leave: 0,
-//       Permission: 0,
-//       dailyRecords: [],
-//     };
-
-//     // 1. Get Attendance Records
-//     const attendanceRecords = await Attendance.find({
-//       employeeId,
-//       date: { $gte: startDate, $lte: endDate },
-//     });
-
-//     attendanceRecords.forEach((entry) => {
-//       const status = entry.status;
-//       const date = entry.date.toISOString().split('T')[0]; // format YYYY-MM-DD
-
-//       if (status === 'Present' || status === 'Absent' || status === 'Half Day') {
-//         result[status] += 1;
-//         result.dailyRecords.push({ date, status });
-//       }
-//     });
-
-//     // 2. Get Approved Leaves
-//     const leaveRecords = await LeaveRequest.find({
-//       employeeId,
-//       status: 'Approved',
-//       createdAt: { $gte: startDate, $lte: endDate },
-//     });
-
-//     leaveRecords.forEach((entry) => {
-//       const date = new Date(entry.createdAt).toISOString().split('T')[0];
-//       result.Leave += 1;
-//       result.dailyRecords.push({ date, status: 'Leave' });
-//     });
-
-//     // 3. Get Approved Permissions
-//     const permissionRecords = await PermissionRequest.find({
-//       employeeId,
-//       status: 'Approved',
-//       createdAt: { $gte: startDate, $lte: endDate },
-//     });
-
-//     permissionRecords.forEach((entry) => {
-//       const date = new Date(entry.createdAt).toISOString().split('T')[0];
-//       result.Permission += 1;
-//       result.dailyRecords.push({ date, status: 'Permission' });
-//     });
-
-//     return res.status(200).json(result);
-//   } catch (error) {
-//     console.error("getMonthlySummary error:", error);
-//     return res.status(500).json({ message: "Server error" });
-//   }
-// };
-
 
 const getMonthlySummary = async (req, res) => {
   const { employeeId, year, month } = req.params;
