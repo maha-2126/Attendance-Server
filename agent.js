@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const { getConnectedWifiMac, getLocalDeviceMac } = require('./utils/macUtils');
 const axios = require('axios');
+const ip = require('ip');
 
 const app = express();
 app.use(cors());
@@ -13,19 +14,22 @@ app.post('/trigger-checkin', async (req, res) => {
   try {
     const wifiMac = getConnectedWifiMac();
     const deviceMac = getLocalDeviceMac();
+    const ipAddress = ip.address();
     const token = req.body.token;
 
     if (!token) {
-      return res.status(400).json({ message: 'Token missing' });
+      return res.status(400).json({ message: '❌ Token missing' });
     }
 
     console.log("👉 wifiMac:", wifiMac);
     console.log("👉 deviceMac:", deviceMac);
+    console.log("👉 ipAddress:", ipAddress);
     console.log("👉 token:", token);
 
     const response = await axios.post(`${API_BASE_URL}/api/attendance/checkin`, {
       wifiMac,
-      deviceMac
+      deviceMac,
+      ipAddress
     }, {
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -40,4 +44,4 @@ app.post('/trigger-checkin', async (req, res) => {
   }
 });
 
-app.listen(3001, () => console.log("MAC Agent running on port 3001"));
+app.listen(3001, () => console.log("✅ MAC Agent running on port 3001"));
