@@ -12,7 +12,11 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://attendance-client-flame.vercel.app', // or specific frontend domain
+  credentials: true
+}));
+
 app.use(express.json());
 
 // Routes
