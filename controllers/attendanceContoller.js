@@ -9,7 +9,7 @@ const { normalizeMac } = require('../utils/macUtils');
 
 const checkIn = async (req, res) => {
   try {
-    const { wifiMac, deviceMac, ipAddress } = req.body;
+    const { wifiMac, deviceMac } = req.body;
 
     if (!wifiMac || !deviceMac) {
       return res.status(400).json({ message: "MAC addresses required" });
@@ -19,12 +19,13 @@ const checkIn = async (req, res) => {
     const office = await OfficeConfig.findOne();
 
     if (!employee || !office?.macAddress) {
-      return res.status(404).json({ message: "Employee or office config not found" });
+      return res.status(404).json({ message: "Employee or Office config not found" });
     }
 
+    const normalizeMac = (mac) => mac?.toLowerCase().replace(/-/g, ':').trim();
     const officeMac = normalizeMac(office.macAddress);
-    const wifiMacClean = normalizeMac(wifiMac);
     const deviceMacClean = normalizeMac(deviceMac);
+    const wifiMacClean = normalizeMac(wifiMac);
     const mobileMac = normalizeMac(employee.mobileMacAddress);
     const laptopMac = normalizeMac(employee.laptopMacAddress);
 
@@ -34,11 +35,7 @@ const checkIn = async (req, res) => {
 
     const isFromValidDevice = deviceMacClean === mobileMac || deviceMacClean === laptopMac;
     if (!isFromValidDevice) {
-      return res.status(403).json({ message: "Device not registered to this employee" });
-    }
-
-    if (ipAddress) {
-      console.log("📡 IP Address:", ipAddress);
+      return res.status(403).json({ message: "Device not registered for you" });
     }
 
     const today = new Date();
@@ -54,7 +51,7 @@ const checkIn = async (req, res) => {
     }
 
     const now = new Date();
-    const attendance = await Attendance.create({
+    await Attendance.create({
       employeeId: req.user.userId,
       date: today,
       checkInTime: now,
@@ -68,16 +65,15 @@ const checkIn = async (req, res) => {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
-      }),
-      checkInTime: now,
-      status: "Pending"
+      })
     });
 
   } catch (err) {
-    console.error("❌ Check-in Error:", err);
+    console.error("Check-in Error:", err);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 
 const checkOut = async (req, res) => {
