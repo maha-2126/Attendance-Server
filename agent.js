@@ -1,5 +1,3 @@
-require('dotenv').config(); // Optional if you're using .env
-
 const express = require('express');
 const cors = require('cors');
 const { getConnectedWifiMac, getLocalDeviceMac } = require('./utils/macUtils');
@@ -9,7 +7,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = 'https://attendance-server-7.onrender.com';
 
 app.post('/trigger-checkin', async (req, res) => {
   try {
@@ -18,7 +16,7 @@ app.post('/trigger-checkin', async (req, res) => {
     const token = req.body.token;
 
     if (!token) {
-      return res.status(400).json({ message: '❌ Token missing' });
+      return res.status(400).json({ message: 'Token missing' });
     }
 
     console.log("👉 wifiMac:", wifiMac);
@@ -42,4 +40,4 @@ app.post('/trigger-checkin', async (req, res) => {
   }
 });
 
-app.listen(3001, () => console.log("✅ MAC Agent running on port 3001"));
+app.listen(3001, () => console.log("MAC Agent running on port 3001"));
