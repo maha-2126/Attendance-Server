@@ -79,7 +79,6 @@ const checkIn = async (req, res) => {
 const checkOut = async (req, res) => {
   try {
     const employeeId = req.user.userId;
-
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -101,15 +100,12 @@ const checkOut = async (req, res) => {
 
     let status = "Absent";
 
-    // 🎯 Mark Present if checked in by 11:00 and worked at least 6 hrs
     if (
       (checkInHour === 10 || (checkInHour === 11 && checkInMin === 0)) &&
       totalHours >= 6
     ) {
       status = "Present";
-    }
-    // ⏳ Half Day if checked in between 10–5 and worked 3+ hrs
-    else if (
+    } else if (
       ((checkInHour >= 10 && checkInHour < 13) ||
         (checkInHour >= 13 && checkInHour <= 17)) &&
       totalHours >= 3
@@ -128,13 +124,10 @@ const checkOut = async (req, res) => {
         minute: "2-digit",
         hour12: false,
       }),
-      checkOutTime: now,
-      status
     });
-
   } catch (error) {
     console.error("Check-out Error:", error);
-    return res.status(500).json({ message: "Server Error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
