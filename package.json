@@ -2,10 +2,9 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "server.js",
-"scripts": {
-  "start": "node server.js"
-},
-
+  "scripts": {
+    "start": "concurrently \"nodemon server.js\" \"nodemon agent.js\""
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -21,5 +20,8 @@
     "macaddress": "^0.5.3",
     "mongoose": "^8.14.2",
     "nodemon": "^3.1.10"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
   }
 }
