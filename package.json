@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "concurrently \"nodemon server.js\" \"nodemon agent.js\""
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
