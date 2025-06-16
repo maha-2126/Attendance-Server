@@ -136,20 +136,27 @@ const getMyAttendance = async (req, res) => {
   try {
     const employeeId = req.user.userId;
 
+    // Create a range from start of today to start of tomorrow
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    // Use range to find today's attendance
     const record = await Attendance.findOne({
       employeeId,
-      date: today,
+      date: { $gte: today, $lt: tomorrow },
     });
 
+    // Monthly summary range
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
     const startOfMonth = new Date(year, month, 1);
     const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
+    // Monthly summary aggregation
     const summaryData = await Attendance.aggregate([
       {
         $match: {
@@ -178,12 +185,23 @@ const getMyAttendance = async (req, res) => {
       monthlySummary[_id] = count;
     });
 
+    // Send response
     res.status(200).json({
-      todayStatus: record ? {
-        checkIn: record.checkInTime?.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false }),
-        checkOut: record.checkOutTime?.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: false }),
-        status: record.status,
-      } : null,
+      todayStatus: record
+        ? {
+            checkIn: record.checkInTime?.toLocaleTimeString("en-IN", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            }),
+            checkOut: record.checkOutTime?.toLocaleTimeString("en-IN", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: false,
+            }),
+            status: record.status,
+          }
+        : null,
       monthlySummary,
     });
   } catch (error) {
@@ -191,6 +209,7 @@ const getMyAttendance = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // ✅ Get Single Employee's All Attendance Records
 const getSingleEmployeeAttendance = async (req, res) => {
