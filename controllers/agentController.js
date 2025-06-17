@@ -1,6 +1,6 @@
 const axios = require('axios');
-const ip = require('ip');
-const { getConnectedWifiMac, getLocalDeviceMac } = require('../utils/macUtils');
+
+const { getConnectedWifiMac, getLocalDeviceMac , getDeviceIpAddress } = require('../utils/macUtils');
 
 const API_BASE_URL = process.env.API_BASE_URL || 'https://attendance-server-7.onrender.com/api';
 
@@ -8,7 +8,7 @@ const triggerCheckIn = async (req, res) => {
   try {
     const wifiMac = getConnectedWifiMac();
     const deviceMac = getLocalDeviceMac();
-    const ipAddress = ip.address();
+    const ipAddress = getDeviceIpAddress();
     const token = req.body.token;
 
     if (!token) {
