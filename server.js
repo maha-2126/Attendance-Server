@@ -13,7 +13,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'https://attendance-client-flame.vercel.app', // or specific frontend domain
+  origin: process.env.CLIENT_URL,
   credentials: true
 }));
 
