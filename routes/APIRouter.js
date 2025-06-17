@@ -39,7 +39,7 @@ const {
 
 const { getDashboardStats } = require('../controllers/getDashboardStats');
 
-const { triggerCheckIn } = require('../controllers/agentController');
+// const { triggerCheckIn } = require('../controllers/agentController');
 
 // -------------------- AUTH --------------------
 router.post('/auth/login', loginUser); // /api/auth/login
@@ -116,7 +116,7 @@ router.delete('/user/delete/:id', verifyToken(['superadmin']), deleteUser);
 router.put('/user/restore/:id', verifyToken(['superadmin']), restoreUser);
 
 // -------------------- AGENT ROUTE --------------------
-router.post('/trigger-checkin', verifyToken(['employee']), triggerCheckIn);
+// router.post('/trigger-checkin', verifyToken(['employee']), triggerCheckIn);
 
 
 module.exports = router;
