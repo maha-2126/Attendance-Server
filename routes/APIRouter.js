@@ -1,78 +1,3 @@
-// const express = require('express');
-// const router = express.Router();
-// const { loginUser, createSuperadmin } = require('../controllers/authController');
-// const {
-//   createAdmin,
-//   getAllAdmins,
-//   updateAdmin,
-//   deleteAdmin,
-//   restoreAdmin,
-//   getDeletedAdmins,
-//   getAdminDetails,
-// } = require('../controllers/superadminController');
-
-// const {
-//   createEmployee,
-//   getSingleEmployee,
-//   updateEmployee,
-//   deleteEmployee,
-//   respondLeaveRequest,
-//   respondPermissionRequest,
-//   getStats,
-//   getAllEmployees,
-//   fetchLeaveRequest, 
-//   fetchPermissionRequest,
-// } = require('../controllers/adminController');
-
-
-// const attendanceController = require('../controllers/attendanceContoller');
-
-// const leaveController = require("../controllers/leaveController");
-// const permissionController = require("../controllers/permissionController");
-// const employeeController = require("../controllers/employeeController");
-
-// // Auth
-// router.post('/login', loginUser);
-// router.post('/create-superadmin', createSuperadmin); // 1
-
-// // Superadmin
-// router.post('/admin/create', createAdmin);
-// router.get('/admin/all', getAllAdmins);
-// router.put('/admin/update/:id', updateAdmin);
-// router.delete('/admin/delete/:id', deleteAdmin);
-// router.put('/admin/restore/:id', restoreAdmin);
-// router.get('/admin/getdeleteadmins',getDeletedAdmins);
-// router.get('/admin/details/:id', getAdminDetails);
-
-// // Admin - Employee
-// router.post('/employee/create', createEmployee);
-// router.get('/employee/stats', getStats);
-// router.get('/employee/leave-requests', fetchLeaveRequest );
-// router.get('/employee/permission-requests', fetchPermissionRequest);
-// router.get('/employee/:id', getSingleEmployee);
-// router.get('/employees', getAllEmployees);
-// router.put('/employee/update/:id', updateEmployee);
-// router.delete('/employee/delete/:id', deleteEmployee);
-// router.put('/employee/leave-request/respond/:requestId', respondLeaveRequest);
-// router.put('/employee/permission-request/respond/:requestId', respondPermissionRequest);
-
-
-// // Employee Attendance
-// router.post("/attendance", attendanceController.markAttendance);
-// router.get("/attendance/summary/:userId", attendanceController.getAttendanceSummary);
-
-// router.post("/leave", leaveController.createLeave);
-// router.get("/leave/:userId", leaveController.getUserLeaves);
-
-// router.post("/permission", permissionController.createPermission);
-// router.get("/permission/:userId", permissionController.getUserPermissions);
-
-// router.get("/profile/:userId", employeeController.getProfile);
-
-// module.exports = router;
-
-
-
 // routes/APIRouter.js
 
 const express = require('express');
@@ -90,9 +15,6 @@ const {
 const { 
   createEmployee, listEmployees, getEmployeeById, updateEmployee, deleteEmployee, getDeletedEmployees, restoreEmployee 
 } = require('../controllers/employeeController');
-// const { 
-//   markAttendance, getAttendanceSummary 
-// } = require('../controllers/attendanceContoller');
 
 const { 
   checkIn,
@@ -116,6 +38,8 @@ const {
 } = require('../controllers/userController');
 
 const { getDashboardStats } = require('../controllers/getDashboardStats');
+
+const { triggerCheckIn } = require('../controllers/agentController');
 
 // -------------------- AUTH --------------------
 router.post('/auth/login', loginUser); // /api/auth/login
@@ -190,5 +114,9 @@ router.get('/dashboard/stats', verifyToken(['admin', 'superadmin']), getDashboar
 router.get('/user/list', verifyToken(['superadmin']), listUsers);
 router.delete('/user/delete/:id', verifyToken(['superadmin']), deleteUser);
 router.put('/user/restore/:id', verifyToken(['superadmin']), restoreUser);
+
+// -------------------- AGENT ROUTE --------------------
+router.post('/trigger-checkin', verifyToken(['employee']), triggerCheckIn);
+
 
 module.exports = router;
